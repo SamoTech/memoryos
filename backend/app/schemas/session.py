@@ -1,15 +1,11 @@
-"""Pydantic schemas for Session."""
-from __future__ import annotations
-
-from datetime import datetime
-from typing import List, Optional
-
 from pydantic import BaseModel
-from app.schemas.memory import MemoryRead
+from typing import Optional, List
+from datetime import datetime
+from .memory import MemoryRead
 
 
 class SessionCreate(BaseModel):
-    source: str
+    source: str = "manual"
     title: Optional[str] = None
     url: Optional[str] = None
 
@@ -23,6 +19,10 @@ class SessionRead(BaseModel):
     started_at: datetime
     ended_at: Optional[datetime]
     url: Optional[str]
-    memories: List[MemoryRead] = []
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
+
+
+class SessionDetail(SessionRead):
+    memories: List[MemoryRead] = []

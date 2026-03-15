@@ -1,51 +1,37 @@
-"""Async background task worker."""
-from __future__ import annotations
-
 import asyncio
 import logging
-from collections import deque
-from typing import Deque
+from datetime import datetime, timezone, timedelta
+from app.core.config import settings
+from app.core.database import AsyncSessionLocal
+from app.models.memory import Memory
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
-# Simple in-process task queue
-_pending_memory_ids: Deque[str] = deque(maxlen=500)
+
+async def run_retention_cleanup():
+    if settings.DATA_RETENTION_DAYS == 0:
+        return
+    cutoff = datetime.now(timezone.utc) - timedelta(days=settings.DATA_RETENTION_DAYS)
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(Memory).where(
+                Memory.created_at < cutoff,
+                Memory.is_forgotten == False,
+                Memory.is_pinned == False,
+            )
+        )
+        memories = result.scalars().all()
+        for memory in memories:
+            memory.is_forgotten = True
+            logger.info(f"Retention cleanup: forgetting {memory.id}")
+        await session.commit()
 
 
-async def schedule_summarization(memory_id: str) -> None:
-    """Enqueue a memory for background summarization."""
-    _pending_memory_ids.append(memory_id)
-
-
-async def process_pending_summarizations() -> None:
-    """Process queued summarization jobs — called by background task loop."""
-    from app.core.database import AsyncSessionLocal
-    from app.models.memory import Memory
-    from app.services.summarizer import summarizer
-    from app.services.extractor import score_importance
-    from sqlalchemy import select
-
-    while _pending_memory_ids:
-        memory_id = _pending_memory_ids.popleft()
-        try:
-            async with AsyncSessionLocal() as db:
-                result = await db.execute(select(Memory).where(Memory.id == memory_id))
-                memory = result.scalars().first()
-                if not memory:
-                    continue
-                summary = await summarizer.summarize_memory(memory.content)
-                entities = await summarizer.extract_entities(memory.content)
-                memory.summary = summary or memory.summary
-                memory.entities = entities
-                memory.importance_score = score_importance(memory.content, entities)
-                await db.commit()
-                logger.info("Summarised memory %s", memory_id)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Failed to summarise memory %s: %s", memory_id, exc)
-
-
-async def background_worker_loop() -> None:
-    """Runs indefinitely, processing jobs every 10 seconds."""
+async def background_worker():
     while True:
-        await asyncio.sleep(10)
-        await process_pending_summarizations()
+        try:
+            await run_retention_cleanup()
+        except Exception as e:
+            logger.error(f"Background worker error: {e}")
+        await asyncio.sleep(3600)

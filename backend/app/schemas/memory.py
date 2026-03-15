@@ -1,10 +1,23 @@
-"""Pydantic schemas for Memory."""
-from __future__ import annotations
-
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-
 from pydantic import BaseModel, Field
+from typing import Optional, List, Any
+from datetime import datetime
+from app.models.memory import MemorySource
+
+
+class MemoryCreate(BaseModel):
+    content: str = Field(..., min_length=1)
+    source: MemorySource = MemorySource.manual
+    session_id: Optional[str] = None
+    tags: List[str] = []
+    metadata: Optional[dict] = None
+
+
+class MemoryUpdate(BaseModel):
+    content: Optional[str] = None
+    summary: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_pinned: Optional[bool] = None
+    importance_score: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 
 class TagRead(BaseModel):
@@ -12,32 +25,17 @@ class TagRead(BaseModel):
     name: str
     color: str
 
-    model_config = {"from_attributes": True}
-
-
-class MemoryCreate(BaseModel):
-    content: str = Field(..., min_length=1, max_length=50_000)
-    source: str = Field(default="manual")
-    session_id: Optional[str] = None
-    tags: List[str] = Field(default_factory=list)
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class MemoryUpdate(BaseModel):
-    content: Optional[str] = None
-    summary: Optional[str] = None
-    is_pinned: Optional[bool] = None
-    tags: Optional[List[str]] = None
-    importance_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    class Config:
+        from_attributes = True
 
 
 class MemoryRead(BaseModel):
     id: str
     content: str
     summary: Optional[str]
-    source: str
+    source: MemorySource
     session_id: Optional[str]
-    entities: Optional[Dict[str, Any]]
+    entities: Optional[Any]
     importance_score: float
     is_pinned: bool
     is_forgotten: bool
@@ -46,10 +44,10 @@ class MemoryRead(BaseModel):
     access_count: int
     tags: List[TagRead] = []
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
 
 
-class MemoryBulkCreate(BaseModel):
-    memories: List[MemoryCreate]
-    session_id: Optional[str] = None
-    source: Optional[str] = None
+class MemorySearchResult(BaseModel):
+    memory: MemoryRead
+    score: float

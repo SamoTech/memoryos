@@ -1,6 +1,6 @@
-from app.models.memory import Memory
-from app.models.session import Session
-from app.models.tag import Tag, memory_tag_association
-from app.models.source import Source
+from .memory import Memory, MemorySource
+from .session import Session
+from .tag import Tag, memory_tags
+from .source import Source
 
-__all__ = ["Memory", "Session", "Tag", "memory_tag_association", "Source"]
+__all__ = ["Memory", "MemorySource", "Session", "Tag", "memory_tags", "Source"]

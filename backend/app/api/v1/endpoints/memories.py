@@ -1,61 +1,53 @@
-"""CRUD endpoints for memories."""
-from __future__ import annotations
-
 from typing import List, Optional
-
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.database import get_db
-from app.schemas.memory import MemoryBulkCreate, MemoryCreate, MemoryRead, MemoryUpdate
+from app.core.database import get_session
+from app.schemas.memory import MemoryCreate, MemoryRead, MemoryUpdate
 from app.services.memory_service import memory_service
 
-router = APIRouter(prefix="/memories", tags=["memories"])
+router = APIRouter()
 
 
 @router.get("", response_model=List[MemoryRead])
 async def list_memories(
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    skip: int = 0,
+    limit: int = Query(50, le=200),
     source: Optional[str] = None,
-    tag: Optional[str] = None,
-    pinned_only: bool = False,
-    db: AsyncSession = Depends(get_db),
+    pinned: bool = False,
+    session: AsyncSession = Depends(get_session),
 ):
-    return await memory_service.list(db, limit, offset, source, tag, pinned_only)
+    return await memory_service.list(session, skip=skip, limit=limit, source=source, pinned_only=pinned)
 
 
-@router.post("", response_model=MemoryRead, status_code=status.HTTP_201_CREATED)
-async def create_memory(
+@router.post("", response_model=MemoryRead, status_code=201)
+async def add_memory(
     payload: MemoryCreate,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_session),
 ):
-    return await memory_service.add(db, payload)
+    return await memory_service.add(
+        session,
+        content=payload.content,
+        source=payload.source,
+        session_id=payload.session_id,
+        metadata=payload.metadata,
+        tags=payload.tags,
+    )
 
 
-@router.post("/bulk", response_model=List[MemoryRead], status_code=status.HTTP_201_CREATED)
-async def bulk_create_memories(
-    payload: MemoryBulkCreate,
-    db: AsyncSession = Depends(get_db),
+@router.post("/bulk", response_model=List[MemoryRead], status_code=201)
+async def bulk_add_memories(
+    payload: List[MemoryCreate],
+    session: AsyncSession = Depends(get_session),
 ):
-    memories = [
-        MemoryCreate(
-            content=m.content,
-            source=payload.source or m.source,
-            session_id=payload.session_id or m.session_id,
-            tags=m.tags,
-        )
-        for m in payload.memories
-    ]
-    return await memory_service.bulk_add(db, memories)
+    return await memory_service.bulk_add(session, [p.model_dump() for p in payload])
 
 
 @router.get("/{memory_id}", response_model=MemoryRead)
 async def get_memory(
     memory_id: str,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_session),
 ):
-    memory = await memory_service.get(db, memory_id)
+    memory = await memory_service.get(session, memory_id)
     if not memory:
         raise HTTPException(status_code=404, detail="Memory not found")
     return memory
@@ -65,30 +57,33 @@ async def get_memory(
 async def update_memory(
     memory_id: str,
     payload: MemoryUpdate,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_session),
 ):
-    memory = await memory_service.update(db, memory_id, payload)
+    memory = await memory_service.update(
+        session, memory_id, **payload.model_dump(exclude_none=True)
+    )
     if not memory:
         raise HTTPException(status_code=404, detail="Memory not found")
     return memory
 
 
-@router.delete("/{memory_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{memory_id}")
 async def forget_memory(
     memory_id: str,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_session),
 ):
-    success = await memory_service.forget(db, memory_id)
-    if not success:
+    ok = await memory_service.forget(session, memory_id)
+    if not ok:
         raise HTTPException(status_code=404, detail="Memory not found")
+    return {"ok": True, "id": memory_id}
 
 
 @router.post("/{memory_id}/pin", response_model=MemoryRead)
 async def pin_memory(
     memory_id: str,
-    db: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_session),
 ):
-    memory = await memory_service.pin(db, memory_id)
+    memory = await memory_service.pin(session, memory_id)
     if not memory:
         raise HTTPException(status_code=404, detail="Memory not found")
     return memory

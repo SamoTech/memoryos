@@ -1,72 +1,32 @@
-"""ChromaDB singleton — local, embedded, no external server needed."""
-from __future__ import annotations
-
-import logging
-from functools import lru_cache
-from typing import Any
-
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-
-from app.core.config import settings
-
-logger = logging.getLogger(__name__)
+from .config import settings
 
 
-@lru_cache(maxsize=1)
-def get_chroma_client() -> chromadb.ClientAPI:
-    """Return a cached ChromaDB persistent client."""
-    client = chromadb.PersistentClient(
-        path=str(settings.chroma_path),
-        settings=ChromaSettings(anonymized_telemetry=False),
-    )
-    logger.info("ChromaDB initialised at %s", settings.chroma_path)
-    return client
+class VectorStore:
+    _client: chromadb.Client = None
+    _collection = None
+
+    @classmethod
+    def get_collection(cls):
+        if cls._client is None:
+            path = settings.DATA_DIR / "chroma"
+            path.mkdir(parents=True, exist_ok=True)
+            cls._client = chromadb.PersistentClient(
+                path=str(path),
+                settings=ChromaSettings(anonymized_telemetry=False),
+            )
+        if cls._collection is None:
+            cls._collection = cls._client.get_or_create_collection(
+                name="memories",
+                metadata={"hnsw:space": "cosine"},
+            )
+        return cls._collection
+
+    @classmethod
+    def reset(cls):
+        cls._client = None
+        cls._collection = None
 
 
-def get_memories_collection() -> chromadb.Collection:
-    """Return (or create) the memories collection."""
-    client = get_chroma_client()
-    return client.get_or_create_collection(
-        name="memories",
-        metadata={"hnsw:space": "cosine"},
-    )
-
-
-def upsert_embedding(
-    embedding_id: str,
-    embedding: list[float],
-    document: str,
-    metadata: dict[str, Any],
-) -> None:
-    col = get_memories_collection()
-    col.upsert(
-        ids=[embedding_id],
-        embeddings=[embedding],
-        documents=[document],
-        metadatas=[metadata],
-    )
-
-
-def delete_embedding(embedding_id: str) -> None:
-    col = get_memories_collection()
-    try:
-        col.delete(ids=[embedding_id])
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Could not delete embedding %s: %s", embedding_id, exc)
-
-
-def query_embeddings(
-    query_embedding: list[float],
-    n_results: int = 20,
-    where: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    col = get_memories_collection()
-    kwargs: dict[str, Any] = {
-        "query_embeddings": [query_embedding],
-        "n_results": n_results,
-        "include": ["documents", "metadatas", "distances"],
-    }
-    if where:
-        kwargs["where"] = where
-    return col.query(**kwargs)
+vector_store = VectorStore()
