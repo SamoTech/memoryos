@@ -20,8 +20,6 @@
 <!-- Quality badges -->
 [![CI](https://img.shields.io/github/actions/workflow/status/SamoTech/memoryos/ci.yml?branch=main&style=flat-square&label=CI&logo=github)](https://github.com/SamoTech/memoryos/actions)
 [![Release](https://img.shields.io/github/v/release/SamoTech/memoryos?style=flat-square&color=22c55e&logo=github)](https://github.com/SamoTech/memoryos/releases)
-[![PyPI](https://img.shields.io/pypi/v/memoryos?style=flat-square&logo=pypi&logoColor=white&color=6366f1)](https://pypi.org/project/memoryos)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/memoryos?style=flat-square&logo=pypi&logoColor=white&color=4f46e5)](https://pypi.org/project/memoryos)
 
 <!-- Community badges -->
 [![Stars](https://img.shields.io/github/stars/SamoTech/memoryos?style=flat-square&logo=github&color=f59e0b)](https://github.com/SamoTech/memoryos/stargazers)
@@ -39,7 +37,6 @@
 
 <!-- Support badges -->
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa.svg?style=flat-square&logo=github-sponsors)](https://github.com/sponsors/SamoTech)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5e5b.svg?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/samotech)
 [![Made in Egypt](https://img.shields.io/badge/Made%20in-%F0%9F%87%AA%F0%9F%87%AC%20Egypt-cc0000.svg?style=flat-square)](https://github.com/SamoTech)
 
 </div>
@@ -520,7 +517,6 @@ Copyright © 2026 [Ossama Hashim](https://github.com/SamoTech)
 If MemoryOS saves you time, consider supporting:
 
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor%20on-GitHub-ea4aaa?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/SamoTech)
-[![Ko-fi](https://img.shields.io/badge/Buy%20me%20a%20coffee-Ko--fi-ff5e5b?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/samotech)
 
 ---
 
