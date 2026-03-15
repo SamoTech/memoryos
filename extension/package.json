@@ -1,0 +1,13 @@
+{
+  "name": "memoryos-extension",
+  "version": "1.0.0",
+  "description": "MemoryOS browser extension",
+  "scripts": {
+    "build": "tsc && node scripts/copy-assets.js",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/chrome": "^0.0.260"
+  }
+}

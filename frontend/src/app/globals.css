@@ -2,17 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #0a0a0f;
-  --surface: #111118;
-  --border: #1e1e2e;
-  --accent: #6366f1;
-}
-
 body {
-  background: var(--bg);
+  @apply bg-gray-950 text-gray-100;
 }
 
-.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #2d2d44; border-radius: 2px; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }

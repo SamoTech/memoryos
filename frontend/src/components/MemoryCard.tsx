@@ -1,89 +1,78 @@
-'use client'
-import { motion } from 'framer-motion'
-import { Pin, Trash2, Brain, Clock } from 'lucide-react'
-import { SourceBadge } from './SourceBadge'
-import { api } from '@/lib/api'
-import { useQueryClient } from '@tanstack/react-query'
+'use client';
+import { motion } from 'framer-motion';
+import { Pin, Trash2, Tag } from 'lucide-react';
+import clsx from 'clsx';
+import { usePinMemory, useForgetMemory } from '@/hooks/useMemories';
 
-interface Tag { id: string; name: string; color: string }
-interface Memory {
-  id: string; content: string; summary?: string; source: string
-  is_pinned: boolean; importance_score: number; created_at: string
-  tags: Tag[]; access_count: number
-}
+const SOURCE_COLORS: Record<string, string> = {
+  chatgpt: 'bg-green-500/10 text-green-400',
+  claude:  'bg-orange-500/10 text-orange-400',
+  gemini:  'bg-blue-500/10 text-blue-400',
+  cursor:  'bg-purple-500/10 text-purple-400',
+  manual:  'bg-gray-500/10 text-gray-400',
+  api:     'bg-cyan-500/10 text-cyan-400',
+  cli:     'bg-yellow-500/10 text-yellow-400',
+};
 
-export function MemoryCard({ memory, score }: { memory: Memory; score?: number }) {
-  const qc = useQueryClient()
-
-  const handlePin = async () => {
-    await api.post(`/api/v1/memories/${memory.id}/pin`)
-    qc.invalidateQueries({ queryKey: ['memories'] })
-  }
-
-  const handleForget = async () => {
-    if (!confirm('Forget this memory?')) return
-    await api.delete(`/api/v1/memories/${memory.id}`)
-    qc.invalidateQueries({ queryKey: ['memories'] })
-  }
+export default function MemoryCard({ memory }: { memory: any }) {
+  const pin = usePinMemory();
+  const forget = useForgetMemory();
+  const text = memory.summary || memory.content;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`bg-gray-900 border rounded-xl p-4 space-y-3 group hover:border-indigo-500/50 transition-colors ${
-        memory.is_pinned ? 'border-indigo-500/40' : 'border-gray-800'
-      }`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className={clsx(
+        'bg-gray-900 border rounded-xl p-4 flex flex-col gap-3',
+        memory.is_pinned ? 'border-indigo-500/50' : 'border-gray-800',
+      )}
     >
-      {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <SourceBadge source={memory.source} />
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={handlePin} className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-indigo-400">
-            <Pin size={14} className={memory.is_pinned ? 'text-indigo-400 fill-indigo-400' : ''} />
+        <span className={clsx('text-xs font-semibold px-2 py-0.5 rounded-full uppercase', SOURCE_COLORS[memory.source] || SOURCE_COLORS.manual)}>
+          {memory.source}
+        </span>
+        <div className="flex gap-1">
+          <button
+            onClick={() => pin.mutate(memory.id)}
+            className={clsx('p-1 rounded hover:bg-gray-800 transition', memory.is_pinned ? 'text-indigo-400' : 'text-gray-600')}
+            title={memory.is_pinned ? 'Unpin' : 'Pin'}
+          >
+            <Pin size={13} />
           </button>
-          <button onClick={handleForget} className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-red-400">
-            <Trash2 size={14} />
+          <button
+            onClick={() => { if (confirm('Forget this memory?')) forget.mutate(memory.id); }}
+            className="p-1 rounded hover:bg-red-900/30 text-gray-600 hover:text-red-400 transition"
+            title="Forget"
+          >
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
 
-      {/* Summary or content */}
-      <p className="text-gray-200 text-sm leading-relaxed line-clamp-4">
-        {memory.summary || memory.content}
-      </p>
+      <p className="text-sm text-gray-300 leading-relaxed line-clamp-4">{text}</p>
 
-      {/* Importance bar */}
-      <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+      <div className="flex items-center justify-between mt-auto">
+        {memory.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {memory.tags.map((t: any) => (
+              <span key={t.id} className="text-xs px-1.5 py-0.5 rounded" style={{ background: `${t.color}22`, color: t.color }}>
+                {t.name}
+              </span>
+            ))}
+          </div>
+        )}
+        <span className="text-xs text-gray-600 ml-auto">{new Date(memory.created_at).toLocaleDateString()}</span>
+      </div>
+
+      <div className="w-full bg-gray-800 rounded-full h-1">
         <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
-          style={{ width: `${memory.importance_score * 100}%` }}
+          className="bg-indigo-500 h-1 rounded-full"
+          style={{ width: `${(memory.importance_score || 0) * 100}%` }}
         />
       </div>
-
-      {/* Tags */}
-      {memory.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {memory.tags.slice(0, 5).map(tag => (
-            <span key={tag.id} className="text-xs px-2 py-0.5 rounded-full text-white/80" style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55` }}>
-              {tag.name}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <Clock size={11} />
-          {new Date(memory.created_at).toLocaleDateString()}
-        </span>
-        {score !== undefined && (
-          <span className="flex items-center gap-1 text-indigo-400">
-            <Brain size={11} /> {(score * 100).toFixed(0)}%
-          </span>
-        )}
-      </div>
     </motion.div>
-  )
+  );
 }

@@ -1,12 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
-export function useSearch(query: string, limit = 10) {
-  const { data: results = [], isLoading } = useQuery({
-    queryKey: ['search', query, limit],
-    queryFn: () => api.get(`/api/v1/search?q=${encodeURIComponent(query)}&limit=${limit}`),
-    enabled: query.length >= 2,
-  })
+export function useSearch() {
+  const [query, setQuery] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
 
-  return { results, isLoading }
+  const search = useCallback((q: string) => {
+    setQuery(q);
+    const t = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(t);
+  }, []);
+
+  const results = useQuery({
+    queryKey: ['search', debouncedQ],
+    queryFn: () => api.search.hybrid(debouncedQ, 20),
+    enabled: debouncedQ.length >= 2,
+  });
+
+  return { query, search, results };
 }

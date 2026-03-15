@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MemoryOS</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="header">
+    <span class="logo">🧠</span>
+    <span class="title">MemoryOS</span>
+    <span id="status-dot" class="dot offline" title="Server status"></span>
+  </div>
+
+  <div class="search-wrap">
+    <input id="search" type="text" placeholder="Search your memories..." autocomplete="off" />
+  </div>
+
+  <div id="results" class="results"></div>
+
+  <div class="footer">
+    <a id="open-dashboard" href="#">Open Dashboard</a>
+    <label class="toggle-wrap">
+      <input id="capture-toggle" type="checkbox" checked />
+      <span>Capture</span>
+    </label>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

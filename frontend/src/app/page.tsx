@@ -1,50 +1,46 @@
-'use client'
-import { useQuery } from '@tanstack/react-query'
-import { Brain, Clock, Pin, Database, Zap } from 'lucide-react'
-import { MemoryCard } from '@/components/MemoryCard'
-import { StatsWidget } from '@/components/StatsWidget'
-import { SearchBar } from '@/components/SearchBar'
-import { api } from '@/lib/api'
+'use client';
+import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import StatsWidget from '@/components/StatsWidget';
+import MemoryCard from '@/components/MemoryCard';
+import SearchBar from '@/components/SearchBar';
+import { useMemories } from '@/hooks/useMemories';
+import { useSearch } from '@/hooks/useSearch';
 
-export default function DashboardPage() {
-  const { data: stats } = useQuery({ queryKey: ['stats'], queryFn: () => api.get('/api/v1/stats') })
-  const { data: memories = [] } = useQuery({
-    queryKey: ['memories', 'recent'],
-    queryFn: () => api.get('/api/v1/memories?limit=20'),
-  })
+export default function Dashboard() {
+  const { query, search, results: searchResults } = useSearch();
+  const { data: recent } = useMemories({ limit: 20 });
+
+  const displayItems = query.length >= 2
+    ? (searchResults.data || [])
+    : (recent || []).map((m: any) => ({ memory: m, score: 1 }));
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Brain className="text-indigo-400" size={28} />
-          MemoryOS
-        </h1>
-        <p className="text-gray-400 text-sm mt-1">Your AI finally remembers you.</p>
+        <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Your AI finally remembers you.</p>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatsWidget label="Total Memories" value={stats?.total_memories ?? '—'} icon={<Brain size={16} />} color="indigo" />
-        <StatsWidget label="Sessions" value={stats?.total_sessions ?? '—'} icon={<Clock size={16} />} color="violet" />
-        <StatsWidget label="Pinned" value={stats?.pinned_memories ?? '—'} icon={<Pin size={16} />} color="emerald" />
-        <StatsWidget label="DB Size" value={stats ? `${stats.db_size_mb} MB` : '—'} icon={<Database size={16} />} color="amber" />
-      </div>
+      <StatsWidget />
 
-      {/* Quick search */}
-      <SearchBar />
+      <SearchBar value={query} onChange={search} placeholder="Search all memories semantically..." />
 
-      {/* Recent memories */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
-          <Zap size={18} className="text-yellow-400" /> Recent Memories
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {memories.map((m: any) => (
-            <MemoryCard key={m.id} memory={m} />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <AnimatePresence mode="popLayout">
+          {displayItems.map((item: any) => (
+            <MemoryCard key={item.memory?.id || item.id} memory={item.memory || item} />
           ))}
-        </div>
+        </AnimatePresence>
       </div>
+
+      {displayItems.length === 0 && (
+        <div className="text-center py-24 text-gray-600">
+          <div className="text-5xl mb-4">🧠</div>
+          <p className="text-lg">No memories yet.</p>
+          <p className="text-sm mt-1">Install the browser extension and start chatting with any AI.</p>
+        </div>
+      )}
     </div>
-  )
+  );
 }

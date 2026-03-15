@@ -1,21 +1,38 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
-interface UseMemoriesOptions {
-  source?: string
-  pinnedOnly?: boolean
-  limit?: number
+export function useMemories(params?: Record<string, any>) {
+  return useQuery({
+    queryKey: ['memories', params],
+    queryFn: () => api.memories.list(params),
+    refetchInterval: 15_000,
+  });
 }
 
-export function useMemories({ source, pinnedOnly, limit = 50 }: UseMemoriesOptions = {}) {
-  const params = new URLSearchParams({ limit: String(limit) })
-  if (source) params.set('source', source)
-  if (pinnedOnly) params.set('pinned_only', 'true')
+export function useForgetMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.memories.forget(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['memories'] }),
+  });
+}
 
-  const { data: memories = [], isLoading, error } = useQuery({
-    queryKey: ['memories', source, pinnedOnly, limit],
-    queryFn: () => api.get(`/api/v1/memories?${params}`),
-  })
+export function usePinMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.memories.pin(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['memories'] }),
+  });
+}
 
-  return { memories, isLoading, error }
+export function useAddMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: any) => api.memories.add(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['memories'] }),
+  });
+}
+
+export function useStats() {
+  return useQuery({ queryKey: ['stats'], queryFn: api.stats, refetchInterval: 30_000 });
 }
