@@ -1,13 +1,17 @@
 {
   "name": "memoryos-extension",
   "version": "1.0.0",
-  "description": "MemoryOS browser extension",
+  "private": true,
   "scripts": {
     "build": "tsc && node scripts/copy-assets.js",
-    "watch": "tsc -w"
+    "watch": "tsc --watch",
+    "lint": "eslint src --ext .ts"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/chrome": "^0.0.260"
+    "typescript": "^5.5.4",
+    "@types/chrome": "^0.0.268",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"
   }
 }
