@@ -89,4 +89,4 @@ memoryos/
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/SamoTech/memoryos/discussions) or reach out at [ossama@samotech.dev](mailto:ossama@samotech.dev).
+Open a [GitHub Discussion](https://github.com/SamoTech/memoryos/discussions) or tag [@SamoTech](https://github.com/SamoTech) in an issue.

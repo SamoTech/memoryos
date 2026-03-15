@@ -290,28 +290,24 @@ DEBUG=false
 
 # ── Storage ─────────────────────────────
 DATA_DIR=~/.memoryos
-# DB_URL=sqlite+aiosqlite:///~/.memoryos/memories.db
 
 # ── Embeddings ──────────────────────────
-EMBEDDING_PROVIDER=local          # local | openai
-EMBEDDING_MODEL=all-MiniLM-L6-v2  # any sentence-transformers model
+EMBEDDING_PROVIDER=local
+EMBEDDING_MODEL=all-MiniLM-L6-v2
 
 # ── Summarization ────────────────────────
-SUMMARIZER_PROVIDER=ollama        # ollama | groq | openai
+SUMMARIZER_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3
 
 # GROQ_API_KEY=gsk_...
-# GROQ_MODEL=llama3-70b-8192
-
 # OPENAI_API_KEY=sk-...
-# OPENAI_MODEL=gpt-4o-mini
 
 # ── Memory Behaviour ────────────────────
 AUTO_SUMMARIZE=true
-AUTO_SUMMARIZE_THRESHOLD=500      # chars
+AUTO_SUMMARIZE_THRESHOLD=500
 IMPORTANCE_SCORING=true
-DATA_RETENTION_DAYS=0             # 0 = keep forever
+DATA_RETENTION_DAYS=0
 ```
 
 ### Provider comparison
@@ -338,35 +334,22 @@ DATA_RETENTION_DAYS=0             # 0 = keep forever
 - **Semantic search** via ChromaDB + sentence-transformers (384-dim cosine)
 - **Keyword search** via SQLite FTS5 full-text index
 - **Re-ranking**: `0.7 × semantic + 0.3 × keyword × importance × recency × pin_boost`
-- Filter by source, tags, date range
 
 ### 🤖 Flexible AI Providers
-- **Embeddings**: Local `all-MiniLM-L6-v2` (no API key needed) or OpenAI
-- **Summarization**: Ollama (local) → Groq → OpenAI (auto-fallback chain)
-- **Entity extraction**: regex-based (people, projects, tech, decisions, TODOs)
-- **Importance scoring**: automatic signal detection (decisions, bugs, deploys)
+- **Embeddings**: Local `all-MiniLM-L6-v2` (offline) or OpenAI
+- **Summarization**: Ollama (local) → Groq → OpenAI (auto-fallback)
+- **Entity extraction**: people, projects, tech, decisions, TODOs
+- **Importance scoring**: automatic signal detection
 
 ### 🌐 Browser Extension (MV3)
-- Chrome, Edge, Brave support
-- Per-site content scripts (ChatGPT, Claude, Gemini)
-- Smart deduplication via content hashing
-- Batch queue with 2s debounce window
-- Popup with live search + server status
+- Chrome, Edge, Brave — auto-captures ChatGPT, Claude, Gemini
+- Smart deduplication, batch queue, popup with live search
 
 ### 📊 Dashboard (Next.js 14)
-- Real-time memory grid with source color-coding
-- Semantic search bar
-- Stats widget (total, pinned, storage, sources)
-- Session timeline
-- Export to JSON / Markdown / CSV / Obsidian
-- Dark theme, responsive
+- Memory grid, semantic search, stats, sessions, export, dark theme
 
 ### 🔁 Memory Lifecycle
-- **Pin** important memories (never auto-forgotten)
-- **Forget** (soft delete — vector removed from Chroma)
-- **Data retention** — auto-forget old memories after N days
-- **Access tracking** — count and timestamp every retrieval
-- **Background summarization** — async, non-blocking
+- Pin, forget, data retention, access tracking, background summarization
 
 ---
 
@@ -395,23 +378,15 @@ DATA_RETENTION_DAYS=0             # 0 = keep forever
 ```
 ┌────────────────────────────────────────────────────────────┐
 │                        Your Machine                        │
-│                                                            │
 │  ┌──────────────┐    ┌────────────────────────────────┐  │
-│  │   Browser    │    │     MemoryOS Backend :8765     │  │
 │  │  Extension   │───▶│  FastAPI + SQLAlchemy (async)  │  │
-│  │  (MV3, TS)   │    │  ├── SQLite + FTS5             │  │
-│  └──────────────┘    │  ├── ChromaDB (cosine vectors) │  │
-│                       │  ├── sentence-transformers    │  │
-│  ┌──────────────┐    │  └── Ollama / Groq / OpenAI   │  │
-│  │  Dashboard   │───▶│                               │  │
-│  │  Next.js 14  │    └────────────────────────────────┘  │
-│  │  :3000       │                                         │
-│  └──────────────┘    ┌────────────────┐                  │
-│                       │ ~/.memoryos/   │                  │
-│  ┌──────────────┐    │  memories.db   │                  │
-│  │  CLI         │───▶│  chroma/       │                  │
-│  │  memoryos    │    │  models/       │                  │
-│  └──────────────┘    └────────────────┘                  │
+│  └──────────────┘    │  ├── SQLite + FTS5             │  │
+│  ┌──────────────┐    │  ├── ChromaDB                  │  │
+│  │  Dashboard   │───▶│  ├── sentence-transformers    │  │
+│  └──────────────┘    │  └── Ollama / Groq / OpenAI   │  │
+│  ┌──────────────┐    └────────────────────────────────┘  │
+│  │  CLI         │───▶  ~/.memoryos/ (SQLite + Chroma + models) │
+│  └──────────────┘                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -422,40 +397,28 @@ Full architecture docs: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 ## 🐳 Docker
 
 ```bash
-# Start everything
 docker-compose up -d
-
-# View logs
-docker-compose logs -f backend
-
-# Stop
-docker-compose down
-
-# With Ollama for local summarization
-docker-compose --profile ollama up -d
+# Dashboard: http://localhost:3000
+# API:       http://localhost:8765
 ```
-
-Data persists in `./data/` volume.
 
 ---
 
 ## 🗺 Roadmap
 
 ### v1.1
-- [ ] Firefox extension (WebExtensions API)
-- [ ] Cursor IDE integration — LSP plugin
-- [ ] Import from ChatGPT data export (conversations.json)
+- [ ] Firefox extension
+- [ ] Cursor IDE integration
+- [ ] Import from ChatGPT data export
 - [ ] Memory merge & deduplication
 
 ### v1.2
-- [ ] Obsidian vault sync (bidirectional)
-- [ ] Memory graph visualization (D3.js)
+- [ ] Obsidian vault sync
+- [ ] Memory graph visualization
 - [ ] SQLCipher at-rest encryption
-- [ ] Webhook notifications
 
 ### v2.0
-- [ ] Mobile companion app (React Native)
-- [ ] Memory streaks & gamification
+- [ ] Mobile companion app
 - [ ] Multi-user / team memory sharing
 - [ ] MCP server (Model Context Protocol)
 - [ ] VS Code extension
@@ -464,28 +427,12 @@ Data persists in `./data/` volume.
 
 ## 🤝 Contributing
 
-Contributions are what make open source amazing. Every PR, issue, and ⭐ is appreciated.
-
 ```bash
-# Fork + clone
 git clone https://github.com/YOUR_USERNAME/memoryos
-cd memoryos
-
-# Backend setup
-cd backend
+cd memoryos/backend
 python -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev]'
-
-# Run tests
 pytest tests/ -v
-
-# Frontend setup
-cd ../frontend
-npm install && npm run dev
-
-# Extension setup
-cd ../extension
-npm install && npm run build
 ```
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
@@ -494,13 +441,11 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 
 ## 🔐 Security
 
-- The API binds to `127.0.0.1` by default (not `0.0.0.0`)
-- CORS is restricted to `localhost` and `chrome-extension://`
-- No authentication required locally (single-user design)
+- API binds to `127.0.0.1` by default
+- CORS restricted to `localhost` and `chrome-extension://`
 - **Do not expose port 8765 to the internet**
-- For network access, use an SSH tunnel or VPN
 
-Found a vulnerability? Please email [ossama@samotech.dev](mailto:ossama@samotech.dev) before opening a public issue.
+Found a vulnerability? Open a [GitHub Security Advisory](https://github.com/SamoTech/memoryos/security/advisories/new) before making it public.
 
 ---
 
@@ -514,7 +459,7 @@ Copyright © 2026 [Ossama Hashim](https://github.com/SamoTech)
 
 ## 💖 Support
 
-If MemoryOS saves you time, consider supporting:
+If MemoryOS saves you time:
 
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor%20on-GitHub-ea4aaa?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/SamoTech)
 
