@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d0b1a"/>
+      <stop offset="100%" stop-color="#12091f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <circle cx="960" cy="320" r="300" fill="#6366f1" fill-opacity="0.07"/>
+  <circle cx="180" cy="500" r="200" fill="#818cf8" fill-opacity="0.05"/>
+  <circle cx="640" cy="0" r="250" fill="#6366f1" fill-opacity="0.04"/>
+  <circle cx="920" cy="180" r="5" fill="#818cf8" opacity="0.4"/>
+  <circle cx="1020" cy="240" r="4" fill="#6366f1" opacity="0.35"/>
+  <circle cx="1100" cy="180" r="6" fill="#818cf8" opacity="0.3"/>
+  <circle cx="1160" cy="280" r="4" fill="#6366f1" opacity="0.25"/>
+  <circle cx="980" cy="340" r="5" fill="#818cf8" opacity="0.3"/>
+  <circle cx="1060" cy="420" r="4" fill="#6366f1" opacity="0.25"/>
+  <circle cx="1140" cy="370" r="5" fill="#818cf8" opacity="0.3"/>
+  <circle cx="880" cy="440" r="4" fill="#6366f1" opacity="0.2"/>
+  <line x1="920" y1="180" x2="1020" y2="240" stroke="#6366f1" stroke-opacity="0.15" stroke-width="1"/>
+  <line x1="1020" y1="240" x2="1100" y2="180" stroke="#6366f1" stroke-opacity="0.12" stroke-width="1"/>
+  <line x1="1100" y1="180" x2="1160" y2="280" stroke="#6366f1" stroke-opacity="0.12" stroke-width="1"/>
+  <line x1="1020" y1="240" x2="980" y2="340" stroke="#6366f1" stroke-opacity="0.12" stroke-width="1"/>
+  <line x1="1160" y1="280" x2="1140" y2="370" stroke="#6366f1" stroke-opacity="0.1" stroke-width="1"/>
+  <line x1="980" y1="340" x2="1060" y2="420" stroke="#6366f1" stroke-opacity="0.1" stroke-width="1"/>
+  <line x1="1060" y1="420" x2="880" y2="440" stroke="#6366f1" stroke-opacity="0.1" stroke-width="1"/>
+  <!-- Brain icon (SVG paths) -->
+  <g transform="translate(88,128)" fill="none" stroke="#818cf8" stroke-width="2.5" filter="url(#glow)">
+    <ellipse cx="36" cy="36" rx="28" ry="32"/>
+    <path d="M36 8 Q52 8 56 24 Q68 20 68 36 Q68 52 56 52 Q52 68 36 68 Q20 68 16 52 Q4 56 4 40 Q4 24 16 24 Q20 8 36 8Z" stroke="#818cf8" stroke-width="2"/>
+    <line x1="36" y1="8" x2="36" y2="68" stroke="#818cf8" stroke-opacity="0.3" stroke-width="1"/>
+    <path d="M16 36 Q24 28 36 36 Q48 44 56 36" stroke="#818cf8" stroke-opacity="0.4" stroke-width="1.5" fill="none"/>
+  </g>
+  <text x="178" y="198" fill="#e2e8f0" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="500" letter-spacing="3" opacity="0.55">SAMOTECH</text>
+  <text x="88" y="320" fill="#ffffff" font-family="Inter, -apple-system, sans-serif" font-size="100" font-weight="800" letter-spacing="-2">MemoryOS</text>
+  <rect x="88" y="340" width="220" height="4" rx="2" fill="url(#accent)"/>
+  <text x="88" y="400" fill="#a5b4fc" font-family="Inter, -apple-system, sans-serif" font-size="28" font-weight="400">Your AI finally remembers you.</text>
+  <text x="88" y="440" fill="#64748b" font-family="Inter, -apple-system, sans-serif" font-size="20">Local-first · 100% private · Zero cloud · Works with every LLM</text>
+  <rect x="88" y="490" width="128" height="38" rx="19" fill="#6366f1" fill-opacity="0.12" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="152" y="515" fill="#818cf8" font-family="Inter, sans-serif" font-size="15" font-weight="500" text-anchor="middle">SQLite</text>
+  <rect x="232" y="490" width="148" height="38" rx="19" fill="#6366f1" fill-opacity="0.12" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="306" y="515" fill="#818cf8" font-family="Inter, sans-serif" font-size="15" font-weight="500" text-anchor="middle">ChromaDB</text>
+  <rect x="396" y="490" width="128" height="38" rx="19" fill="#6366f1" fill-opacity="0.12" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="460" y="515" fill="#818cf8" font-family="Inter, sans-serif" font-size="15" font-weight="500" text-anchor="middle">FastAPI</text>
+</svg>
